@@ -42,14 +42,19 @@ export default async function DeckDetailsPage({
         <Link href="/decks" className="text-sm text-muted-foreground hover:underline">&larr; Back to Decks</Link>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">{deck.title}</h1>
           <p className="text-muted-foreground">{deck.description}</p>
         </div>
-        <Link href={`/study/${id}`}>
-          <Button size="lg" className="font-bold">Study Now</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href={`/decks/${id}/edit`}>
+            <Button variant="outline">Edit Deck</Button>
+          </Link>
+          <Link href={`/study/${id}`}>
+            <Button size="lg" className="font-bold">Study Now</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

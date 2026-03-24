@@ -26,9 +26,10 @@ export default async function RootLayout({
       <body className={inter.className}>
         {user && (
           <nav className="border-b p-4 mb-4 flex justify-between items-center bg-muted/20">
-            <div className="space-x-6">
+            <div className="space-x-6 flex items-center">
               <Link href="/" className="font-bold">Dashboard</Link>
               <Link href="/decks" className="hover:underline">Decks</Link>
+              <Link href="/mistakes" className="hover:underline text-red-500/80 font-medium">Mistakes</Link>
               <Link href="/friends" className="hover:underline">Friends</Link>
             </div>
             <form action={logout}>

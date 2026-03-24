@@ -92,12 +92,51 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
 
   const playAudio = (text: string) => {
     if ('speechSynthesis' in window) {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ja-JP';
+      
+      // Try to find a Japanese voice
+      const voices = window.speechSynthesis.getVoices();
+      const jpVoice = voices.find(voice => voice.lang.includes('ja') || voice.lang.includes('JP'));
+      
+      if (jpVoice) {
+        utterance.voice = jpVoice;
+      } else {
+        // Fallback if no specific Japanese voice is found
+        utterance.lang = 'ja-JP';
+      }
+      
       utterance.rate = 0.9; // Slightly slower for learning
+      
+      // Add error handling
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        if (event.error === 'not-allowed') {
+          alert("Please click anywhere on the page first to allow audio playback.");
+        } else if (event.error === 'synthesis-unavailable') {
+          alert("Your device or browser doesn't have a Japanese voice installed.");
+        }
+      };
+      
       window.speechSynthesis.speak(utterance);
+    } else {
+      alert("Your browser does not support text-to-speech.");
     }
   }
+
+  // Ensure voices are loaded (some browsers load them asynchronously)
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      // Trigger initial load
+      window.speechSynthesis.getVoices();
+      // Chrome needs this event listener to reliably get voices on first load
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }, []);
 
   if (currentIndex >= cards.length) {
     return (
@@ -112,9 +151,21 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
   const card = cards[currentIndex]
 
   const handleReview = async (quality: number) => {
+    if (loading) return;
     setLoading(true)
+    
+    // Save to database
     await submitReview(card.id, deckId, quality)
-    setCardsReviewed(prev => prev + 1)
+    
+    if (quality < 3) {
+      // If user got it wrong (quality 1 or 2), add this card back to the end of the queue
+      // so they have to review it again in this same session
+      cards.push(card);
+    } else {
+      // Only count as truly reviewed/completed if they got it right
+      setCardsReviewed(prev => prev + 1)
+    }
+    
     setLoading(false)
     setCurrentIndex(prev => prev + 1)
   }
@@ -126,6 +177,8 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
       setShowAnswer(true);
     } else {
       // Incorrect, reveal answer and force review 'Again'
+      // We don't automatically trigger handleReview here to let the user read the correct answer first
+      // They will have to click the "Again(1)" button, which will trigger the retry logic
       setShowAnswer(true);
     }
   }

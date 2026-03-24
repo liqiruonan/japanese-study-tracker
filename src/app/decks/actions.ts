@@ -19,3 +19,37 @@ export async function createDeck(formData: FormData) {
   if (error) throw error
   revalidatePath('/decks')
 }
+
+export async function updateDeck(id: string, formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const title = formData.get('title') as string
+  const description = formData.get('description') as string
+
+  const { error } = await supabase
+    .from('decks')
+    .update({ title, description })
+    .eq('id', id)
+    .eq('user_id', user.id) // Security check
+
+  if (error) throw error
+  revalidatePath('/decks')
+  revalidatePath(`/decks/${id}`)
+}
+
+export async function deleteDeck(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { error } = await supabase
+    .from('decks')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id) // Security check
+
+  if (error) throw error
+  revalidatePath('/decks')
+}
