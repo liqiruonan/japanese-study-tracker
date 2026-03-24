@@ -188,8 +188,8 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
                 >
                   <Volume2 className="h-5 w-5" />
                 </Button>
-                {/* Only show reading initially if NOT spelling mode (unless revealed) */}
-                {card.reading && (showAnswer || currentMode !== 'spelling') && currentMode !== 'spelling' && (
+                {/* Always show reading in flashcard or multiple-choice since spelling mode is handled in the if branch above */}
+                {card.reading && (
                   <p className="text-xl text-muted-foreground">【{card.reading}】</p>
                 )}
               </div>
