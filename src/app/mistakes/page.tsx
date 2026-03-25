@@ -20,8 +20,8 @@ export default async function MistakesPage({
   const currentTab = params?.tab === 'vague' ? 'vague' : 'hard'
 
   // Fetch cards based on tab
-  // "不会" (hard): repetitions = 0 (reset due to failure) or very low ease
-  // "模糊" (vague): repetitions > 0 but ease factor is below normal (2.5)
+  // "分からない" (hard): repetitions = 0 (reset due to failure) or very low ease
+  // "曖昧" (vague): repetitions > 0 but ease factor is below normal (2.5)
   
   let query = supabase
     .from('user_cards')
@@ -63,7 +63,7 @@ export default async function MistakesPage({
     <div className="container mx-auto p-4 space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Mistakes Book (错题本)</h1>
+          <h1 className="text-3xl font-bold">Mistakes Book (間違えた問題)</h1>
           <p className="text-muted-foreground mt-2">
             Review the words you found difficult.
           </p>
@@ -72,10 +72,10 @@ export default async function MistakesPage({
 
       <div className="flex space-x-2 border-b">
         <Link href="/mistakes?tab=hard" className={`px-4 py-2 font-medium ${currentTab === 'hard' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground'}`}>
-          不会 (Don't Know)
+          分からない (Don't Know)
         </Link>
         <Link href="/mistakes?tab=vague" className={`px-4 py-2 font-medium ${currentTab === 'vague' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground'}`}>
-          模糊 (Vague)
+          曖昧 (Vague)
         </Link>
       </div>
 

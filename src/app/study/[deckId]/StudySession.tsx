@@ -73,9 +73,9 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
         e.preventDefault()
         setShowAnswer(true)
       } else if (showAnswer && !loading) {
-        if (e.key === '1') handleReview(1) // 不会
-        if (e.key === '2') handleReview(3) // 模糊
-        if (e.key === '3') handleReview(5) // 会
+        if (e.key === '1') handleReview(1) // 分からない
+        if (e.key === '2') handleReview(3) // 曖昧
+        if (e.key === '3') handleReview(5) // 分かる
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -318,18 +318,18 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
         {showAnswer ? (
           <div className="grid grid-cols-3 gap-2 w-full">
             <Button disabled={loading} variant="destructive" onClick={() => handleReview(1)} className="h-16 text-lg font-bold">
-              不会
+              分からない
             </Button>
             <Button disabled={loading} variant="secondary" onClick={() => handleReview(3)} className="h-16 text-lg font-bold">
-              模糊
+              曖昧
             </Button>
             <Button disabled={loading} variant="default" className="bg-green-600 hover:bg-green-700 h-16 text-lg font-bold" onClick={() => handleReview(5)}>
-              会
+              分かる
             </Button>
           </div>
         ) : currentMode === 'flashcard' ? (
           <Button onClick={() => setShowAnswer(true)} className="w-full h-14 text-lg">
-            显示答案 (Show Answer)
+            答えを表示 (Show Answer)
           </Button>
         ) : null}
 
@@ -343,7 +343,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
               setShowAnswer(false);
             }}
           >
-            &larr; 上一个 (Previous)
+            &larr; 前へ (Previous)
           </Button>
           <Button 
             variant="ghost" 
@@ -353,7 +353,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
               setShowAnswer(false);
             }}
           >
-            跳过 (Skip) &rarr;
+            スキップ (Skip) &rarr;
           </Button>
         </div>
       </div>

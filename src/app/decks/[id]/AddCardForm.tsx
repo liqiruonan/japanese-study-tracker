@@ -34,7 +34,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
       <Input name="example_sentence" placeholder="Example Sentence" disabled={isPending} />
       <Input name="example_translation" placeholder="Example Translation" disabled={isPending} />
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? 'Adding... (添加中)' : 'Add Card (添加单词)'}
+        {isPending ? '追加中... (Adding)' : '単語を追加 (Add Card)'}
       </Button>
     </form>
   )

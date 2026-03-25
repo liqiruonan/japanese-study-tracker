@@ -52,13 +52,13 @@ export default async function DeckDetailsPage({
             <Button variant="outline">Edit Deck</Button>
           </Link>
           <Link href={`/study/${id}?mode=yesterday`}>
-            <Button variant="secondary">复习昨日错词</Button>
+            <Button variant="secondary">昨日の間違いを復習</Button>
           </Link>
           <Link href={`/study/${id}?mode=2days`}>
-            <Button variant="secondary">复习前日错词</Button>
+            <Button variant="secondary">一昨日の間違いを復習</Button>
           </Link>
           <Link href={`/study/${id}`}>
-            <Button size="lg" className="font-bold">自动复习 (Study Now)</Button>
+            <Button size="lg" className="font-bold">自動復習 (Study Now)</Button>
           </Link>
         </div>
       </div>
