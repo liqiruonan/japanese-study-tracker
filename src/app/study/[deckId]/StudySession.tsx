@@ -14,7 +14,6 @@ type StudyMode = 'flashcard' | 'multiple-choice' | 'spelling' | 'random'
 export function StudySession({ cards, deckId, distractors }: { cards: any[], deckId: string, distractors: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
-  const [loading, setLoading] = useState(false)
   const router = useRouter()
   
   // Settings state
@@ -88,7 +87,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
       if (e.code === 'Space' && !showAnswer && currentMode === 'flashcard') {
         e.preventDefault()
         setShowAnswer(true)
-      } else if (showAnswer && !loading && !buttonsDisabled && !autoGrading) {
+      } else if (showAnswer && !buttonsDisabled && !autoGrading) {
         if (e.key === '1') handleReview(1) // 分からない
         if (e.key === '2') handleReview(3) // 曖昧
         if (e.key === '3') handleReview(5) // 分かる
@@ -96,7 +95,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [showAnswer, loading, currentIndex, currentMode, buttonsDisabled, autoGrading])
+  }, [showAnswer, currentIndex, currentMode, buttonsDisabled, autoGrading])
 
   const finishSession = async () => {
     const endTime = Date.now()
@@ -165,12 +164,11 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
 
   const card = cards[currentIndex]
 
-  const handleReview = async (quality: number) => {
-    if (loading) return;
-    setLoading(true)
-    
-    // Save to database
-    await submitReview(card.id, deckId, quality)
+  const handleReview = (quality: number) => {
+    // Optimistic UI update: don't wait for DB
+    submitReview(card.id, deckId, quality).catch(err => {
+      console.error("Failed to save review:", err)
+    })
     
     if (quality < 3) {
       // If user got it wrong (quality 1 or 2), add this card back to the end of the queue
@@ -181,7 +179,6 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
       setCardsReviewed(prev => prev + 1)
     }
     
-    setLoading(false)
     setCurrentIndex(prev => prev + 1)
   }
 
@@ -344,13 +341,13 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-2 w-full">
-              <Button disabled={loading || buttonsDisabled} variant="destructive" onClick={() => handleReview(1)} className="h-16 text-lg font-bold">
+              <Button disabled={buttonsDisabled} variant="destructive" onClick={() => handleReview(1)} className="h-16 text-lg font-bold">
                 分からない
               </Button>
-              <Button disabled={loading || buttonsDisabled} variant="secondary" onClick={() => handleReview(3)} className="h-16 text-lg font-bold">
+              <Button disabled={buttonsDisabled} variant="secondary" onClick={() => handleReview(3)} className="h-16 text-lg font-bold">
                 曖昧
               </Button>
-              <Button disabled={loading || buttonsDisabled} variant="default" className="bg-green-600 hover:bg-green-700 h-16 text-lg font-bold" onClick={() => handleReview(5)}>
+              <Button disabled={buttonsDisabled} variant="default" className="bg-green-600 hover:bg-green-700 h-16 text-lg font-bold" onClick={() => handleReview(5)}>
                 分かる
               </Button>
             </div>
@@ -365,7 +362,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
         <div className="flex justify-between w-full pt-4 border-t border-muted">
           <Button 
             variant="ghost" 
-            disabled={currentIndex === 0 || loading || buttonsDisabled || autoGrading} 
+            disabled={currentIndex === 0 || buttonsDisabled || autoGrading} 
             onClick={() => {
               setCurrentIndex(prev => Math.max(0, prev - 1));
               setShowAnswer(false);
@@ -375,7 +372,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
           </Button>
           <Button 
             variant="ghost" 
-            disabled={loading || buttonsDisabled || autoGrading}
+            disabled={buttonsDisabled || autoGrading}
             onClick={() => {
               setCurrentIndex(prev => prev + 1);
               setShowAnswer(false);

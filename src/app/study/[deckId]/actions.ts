@@ -74,7 +74,7 @@ export async function submitReview(cardId: string, deckId: string, quality: numb
       })
   }
 
-  revalidatePath(`/study/${deckId}`)
+  // Removed revalidatePath to allow for lightning fast optimistic UI updates on the client.
 }
 
 export async function saveStudySession(durationMinutes: number, cardsReviewed: number) {
@@ -97,4 +97,6 @@ export async function saveStudySession(durationMinutes: number, cardsReviewed: n
       duration_minutes: durationMinutes,
       cards_reviewed: cardsReviewed
     })
+
+  revalidatePath('/decks')
 }
