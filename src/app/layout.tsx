@@ -29,6 +29,7 @@ export default async function RootLayout({
             <div className="space-x-6 flex items-center">
               <Link href="/" className="font-bold">Dashboard</Link>
               <Link href="/decks" className="hover:underline">Decks</Link>
+              <Link href="/public-decks" className="hover:underline text-blue-600/80 font-medium">Public Decks</Link>
               <Link href="/mistakes" className="hover:underline text-red-500/80 font-medium">Mistakes</Link>
               <Link href="/friends" className="hover:underline">Friends</Link>
             </div>

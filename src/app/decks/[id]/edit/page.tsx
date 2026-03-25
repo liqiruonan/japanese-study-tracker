@@ -54,6 +54,19 @@ export default async function EditDeckPage({
               <Input id="description" name="description" defaultValue={deck.description || ''} />
             </div>
 
+            <div className="flex items-center space-x-2 py-4">
+              <input 
+                type="checkbox" 
+                id="is_public" 
+                name="is_public" 
+                defaultChecked={deck.is_public}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <Label htmlFor="is_public" className="font-normal cursor-pointer">
+                Make this deck public (anyone can view and import it)
+              </Label>
+            </div>
+
             <Button type="submit">Save Changes</Button>
           </form>
         </CardContent>

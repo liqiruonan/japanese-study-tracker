@@ -47,12 +47,18 @@ export default async function DeckDetailsPage({
           <h1 className="text-3xl font-bold">{deck.title}</h1>
           <p className="text-muted-foreground">{deck.description}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href={`/decks/${id}/edit`}>
             <Button variant="outline">Edit Deck</Button>
           </Link>
+          <Link href={`/study/${id}?mode=yesterday`}>
+            <Button variant="secondary">复习昨日错词</Button>
+          </Link>
+          <Link href={`/study/${id}?mode=2days`}>
+            <Button variant="secondary">复习前日错词</Button>
+          </Link>
           <Link href={`/study/${id}`}>
-            <Button size="lg" className="font-bold">Study Now</Button>
+            <Button size="lg" className="font-bold">自动复习 (Study Now)</Button>
           </Link>
         </div>
       </div>

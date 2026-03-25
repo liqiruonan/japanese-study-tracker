@@ -73,10 +73,9 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
         e.preventDefault()
         setShowAnswer(true)
       } else if (showAnswer && !loading) {
-        if (e.key === '1') handleReview(1)
-        if (e.key === '2') handleReview(3)
-        if (e.key === '3') handleReview(4)
-        if (e.key === '4') handleReview(5)
+        if (e.key === '1') handleReview(1) // 不会
+        if (e.key === '2') handleReview(3) // 模糊
+        if (e.key === '3') handleReview(5) // 会
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -218,8 +217,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
         </div>
       </div>
 
-      <Card className={`min-h-[300px] flex flex-col justify-center items-center p-8 text-center transition-colors ${currentMode === 'flashcard' ? 'cursor-pointer hover:border-primary' : ''}`} 
-            onClick={() => { if (currentMode === 'flashcard' && !showAnswer) setShowAnswer(true) }}>
+      <Card className={`min-h-[300px] flex flex-col justify-center items-center p-8 text-center transition-colors ${currentMode === 'flashcard' && !showAnswer ? 'border-primary/50' : ''}`}>
         <CardContent className="w-full space-y-6">
           
           {/* Card Front Content - Changes based on mode */}
@@ -308,42 +306,57 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
           ) : (
             currentMode === 'flashcard' && (
               <div className="pt-8 text-muted-foreground animate-pulse">
-                Tap card or press space to reveal answer
+                Press space or click the button below to reveal answer
               </div>
             )
           )}
         </CardContent>
       </Card>
 
-      {/* SRS Grading Buttons (Only after reveal) */}
-      {showAnswer && (
-        <div className="grid grid-cols-4 gap-2 w-full max-w-md mx-auto">
-          <Button disabled={loading} variant="destructive" onClick={() => handleReview(1)}>
-            <div className="flex flex-col">
-              <span>Again (1)</span>
-              <span className="text-xs opacity-70">Hard</span>
-            </div>
+      {/* Answer Reveal & Navigation Section */}
+      <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto">
+        {showAnswer ? (
+          <div className="grid grid-cols-3 gap-2 w-full">
+            <Button disabled={loading} variant="destructive" onClick={() => handleReview(1)} className="h-16 text-lg font-bold">
+              不会
+            </Button>
+            <Button disabled={loading} variant="secondary" onClick={() => handleReview(3)} className="h-16 text-lg font-bold">
+              模糊
+            </Button>
+            <Button disabled={loading} variant="default" className="bg-green-600 hover:bg-green-700 h-16 text-lg font-bold" onClick={() => handleReview(5)}>
+              会
+            </Button>
+          </div>
+        ) : currentMode === 'flashcard' ? (
+          <Button onClick={() => setShowAnswer(true)} className="w-full h-14 text-lg">
+            显示答案 (Show Answer)
           </Button>
-          <Button disabled={loading} variant="secondary" onClick={() => handleReview(3)}>
-            <div className="flex flex-col">
-              <span>Hard (2)</span>
-              <span className="text-xs opacity-70">Okay</span>
-            </div>
+        ) : null}
+
+        {/* Navigation controls */}
+        <div className="flex justify-between w-full pt-4 border-t border-muted">
+          <Button 
+            variant="ghost" 
+            disabled={currentIndex === 0 || loading} 
+            onClick={() => {
+              setCurrentIndex(prev => Math.max(0, prev - 1));
+              setShowAnswer(false);
+            }}
+          >
+            &larr; 上一个 (Previous)
           </Button>
-          <Button disabled={loading} variant="default" onClick={() => handleReview(4)}>
-            <div className="flex flex-col">
-              <span>Good (3)</span>
-              <span className="text-xs opacity-70">Easy</span>
-            </div>
-          </Button>
-          <Button disabled={loading} variant="outline" className="border-green-500 text-green-600 hover:bg-green-50" onClick={() => handleReview(5)}>
-            <div className="flex flex-col">
-              <span>Easy (4)</span>
-              <span className="text-xs opacity-70">Very Easy</span>
-            </div>
+          <Button 
+            variant="ghost" 
+            disabled={loading}
+            onClick={() => {
+              setCurrentIndex(prev => prev + 1);
+              setShowAnswer(false);
+            }}
+          >
+            跳过 (Skip) &rarr;
           </Button>
         </div>
-      )}
+      </div>
     </div>
   )
 }
