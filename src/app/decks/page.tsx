@@ -2,9 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { createDeck } from './actions'
+import { CreateDeckForm } from './CreateDeckForm'
 
 export default async function DecksPage() {
   const supabase = await createClient()
@@ -31,15 +29,7 @@ export default async function DecksPage() {
               <CardTitle>Create New Deck</CardTitle>
             </CardHeader>
             <CardContent>
-              <form action={createDeck} className="space-y-4">
-                <Input name="title" placeholder="Deck Title" required />
-                <Input name="description" placeholder="Description (Optional)" />
-                <select name="type" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                  <option value="vocabulary">Vocabulary</option>
-                  <option value="grammar">Grammar</option>
-                </select>
-                <Button type="submit">Create</Button>
-              </form>
+              <CreateDeckForm />
             </CardContent>
           </Card>
         </div>

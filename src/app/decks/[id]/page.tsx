@@ -2,9 +2,8 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { CSVUpload } from './CSVUpload'
-import { addCard } from './actions'
+import { AddCardForm } from './AddCardForm'
 import Link from 'next/link'
 
 export default async function DeckDetailsPage({
@@ -70,18 +69,7 @@ export default async function DeckDetailsPage({
               <CardTitle>Add Single Card</CardTitle>
             </CardHeader>
             <CardContent>
-              <form action={async (formData) => {
-                'use server'
-                await addCard(id, formData)
-              }} className="space-y-3">
-                <Input name="front" placeholder="Front (Kanji/Word)" required />
-                <Input name="reading" placeholder="Reading (Kana)" />
-                <Input name="meaning" placeholder="Meaning" required />
-                <Input name="part_of_speech" placeholder="Part of Speech (e.g. Noun)" />
-                <Input name="example_sentence" placeholder="Example Sentence" />
-                <Input name="example_translation" placeholder="Example Translation" />
-                <Button type="submit" className="w-full">Add Card</Button>
-              </form>
+              <AddCardForm deckId={id} />
             </CardContent>
           </Card>
 
