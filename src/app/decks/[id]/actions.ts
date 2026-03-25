@@ -47,3 +47,37 @@ export async function addCardsBulk(deckId: string, cards: any[]) {
   revalidatePath(`/decks/${deckId}`)
   return { success: true }
 }
+
+export async function updateCard(deckId: string, cardId: string, formData: FormData) {
+  const supabase = await createClient()
+  const front = formData.get('front') as string
+  const reading = formData.get('reading') as string
+  const meaning = formData.get('meaning') as string
+  const part_of_speech = formData.get('part_of_speech') as string
+  const example_sentence = formData.get('example_sentence') as string
+  const example_translation = formData.get('example_translation') as string
+
+  const { error } = await supabase
+    .from('cards')
+    .update({
+      front, reading, meaning, part_of_speech, example_sentence, example_translation
+    })
+    .eq('id', cardId)
+    .eq('deck_id', deckId) // Extra safety to ensure card belongs to deck
+
+  if (error) throw error
+  revalidatePath(`/decks/${deckId}`)
+}
+
+export async function deleteCard(deckId: string, cardId: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('cards')
+    .delete()
+    .eq('id', cardId)
+    .eq('deck_id', deckId) // Extra safety
+
+  if (error) throw error
+  revalidatePath(`/decks/${deckId}`)
+}

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CSVUpload } from './CSVUpload'
 import { AddCardForm } from './AddCardForm'
+import { CardListItem } from './CardListItem'
 import Link from 'next/link'
 
 export default async function DeckDetailsPage({
@@ -90,26 +91,7 @@ export default async function DeckDetailsPage({
 
           <div className="grid gap-3">
             {cards?.map(card => (
-              <Card key={card.id}>
-                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-lg font-bold">{card.front}</span>
-                      {card.reading && <span className="text-sm text-muted-foreground">【{card.reading}】</span>}
-                    </div>
-                    <div className="text-sm">{card.meaning}</div>
-                    {card.example_sentence && (
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        <p>{card.example_sentence}</p>
-                        <p>{card.example_translation}</p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-xs px-2 py-1 bg-muted rounded">
-                    {card.part_of_speech || 'N/A'}
-                  </div>
-                </CardContent>
-              </Card>
+              <CardListItem key={card.id} card={card} deckId={id} />
             ))}
             {(!cards || cards.length === 0) && (
               <p className="text-muted-foreground text-sm">No cards in this deck yet.</p>
