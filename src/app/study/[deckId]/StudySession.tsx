@@ -27,6 +27,8 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
   // Spelling state
   const [spellingInput, setSpellingInput] = useState('')
   const [spellingError, setSpellingError] = useState(false)
+  const [autoGrading, setAutoGrading] = useState(false)
+  const [buttonsDisabled, setButtonsDisabled] = useState(false)
 
   // Timer state
   const startTimeRef = useRef(Date.now())
@@ -63,6 +65,20 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
 
   }, [currentIndex, cards, mode, distractors]);
 
+  // Anti-accidental-click cooldown when answer is revealed
+  useEffect(() => {
+    if (showAnswer) {
+      setButtonsDisabled(true);
+      const timer = setTimeout(() => {
+        setButtonsDisabled(false);
+      }, 1200); // 1.2 second cooldown
+      return () => clearTimeout(timer);
+    } else {
+      setButtonsDisabled(false);
+      setAutoGrading(false);
+    }
+  }, [showAnswer]);
+
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -72,7 +88,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
       if (e.code === 'Space' && !showAnswer && currentMode === 'flashcard') {
         e.preventDefault()
         setShowAnswer(true)
-      } else if (showAnswer && !loading) {
+      } else if (showAnswer && !loading && !buttonsDisabled && !autoGrading) {
         if (e.key === '1') handleReview(1) // 分からない
         if (e.key === '2') handleReview(3) // 曖昧
         if (e.key === '3') handleReview(5) // 分かる
@@ -80,7 +96,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [showAnswer, loading, currentIndex, currentMode])
+  }, [showAnswer, loading, currentIndex, currentMode, buttonsDisabled, autoGrading])
 
   const finishSession = async () => {
     const endTime = Date.now()
@@ -191,6 +207,12 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
     if (normalizedInput === card.front || (card.reading && normalizedInput === card.reading)) {
       setSpellingError(false);
       setShowAnswer(true);
+      setAutoGrading(true);
+      
+      // Auto-advance after 1.5s
+      setTimeout(() => {
+        handleReview(5); // Grade as "分かる" (Easy/Know)
+      }, 1500);
     } else {
       setSpellingError(true);
       // Reveal answer after mistake
@@ -316,17 +338,23 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
       {/* Answer Reveal & Navigation Section */}
       <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto">
         {showAnswer ? (
-          <div className="grid grid-cols-3 gap-2 w-full">
-            <Button disabled={loading} variant="destructive" onClick={() => handleReview(1)} className="h-16 text-lg font-bold">
-              分からない
-            </Button>
-            <Button disabled={loading} variant="secondary" onClick={() => handleReview(3)} className="h-16 text-lg font-bold">
-              曖昧
-            </Button>
-            <Button disabled={loading} variant="default" className="bg-green-600 hover:bg-green-700 h-16 text-lg font-bold" onClick={() => handleReview(5)}>
-              分かる
-            </Button>
-          </div>
+          autoGrading ? (
+            <div className="h-16 flex items-center justify-center w-full bg-green-50 text-green-600 rounded-md border border-green-200 font-bold text-lg animate-pulse">
+              ✨ 正解！自動的に次へ進みます...
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2 w-full">
+              <Button disabled={loading || buttonsDisabled} variant="destructive" onClick={() => handleReview(1)} className="h-16 text-lg font-bold">
+                分からない
+              </Button>
+              <Button disabled={loading || buttonsDisabled} variant="secondary" onClick={() => handleReview(3)} className="h-16 text-lg font-bold">
+                曖昧
+              </Button>
+              <Button disabled={loading || buttonsDisabled} variant="default" className="bg-green-600 hover:bg-green-700 h-16 text-lg font-bold" onClick={() => handleReview(5)}>
+                分かる
+              </Button>
+            </div>
+          )
         ) : currentMode === 'flashcard' ? (
           <Button onClick={() => setShowAnswer(true)} className="w-full h-14 text-lg">
             答えを表示 (Show Answer)
@@ -337,7 +365,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
         <div className="flex justify-between w-full pt-4 border-t border-muted">
           <Button 
             variant="ghost" 
-            disabled={currentIndex === 0 || loading} 
+            disabled={currentIndex === 0 || loading || buttonsDisabled || autoGrading} 
             onClick={() => {
               setCurrentIndex(prev => Math.max(0, prev - 1));
               setShowAnswer(false);
@@ -347,7 +375,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
           </Button>
           <Button 
             variant="ghost" 
-            disabled={loading}
+            disabled={loading || buttonsDisabled || autoGrading}
             onClick={() => {
               setCurrentIndex(prev => prev + 1);
               setShowAnswer(false);
