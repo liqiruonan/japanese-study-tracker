@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { submitReview, saveStudySession } from './actions'
+import { submitReview, saveStudySession, autoSaveSession } from './actions'
 import { useRouter } from 'next/navigation'
 import { Volume2 } from 'lucide-react'
 
@@ -32,6 +32,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
   // Timer state
   const startTimeRef = useRef(Date.now())
   const [cardsReviewed, setCardsReviewed] = useState(0)
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined)
 
   // Initialization per card
   useEffect(() => {
@@ -100,7 +101,7 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
   const finishSession = async () => {
     const endTime = Date.now()
     const durationMinutes = Math.max(1, Math.round((endTime - startTimeRef.current) / 60000))
-    await saveStudySession(durationMinutes, cardsReviewed)
+    await saveStudySession(durationMinutes, cardsReviewed, sessionId)
     router.push(`/decks/${deckId}`)
   }
 
@@ -170,13 +171,20 @@ export function StudySession({ cards, deckId, distractors }: { cards: any[], dec
       console.error("Failed to save review:", err)
     })
     
+    // Auto-save logic and Heatmap count update
+    // Update Heatmap Logic: Every card reviewed counts towards daily activity, regardless of correctness!
+    const newCardsReviewed = cardsReviewed + 1;
+    setCardsReviewed(newCardsReviewed);
+    
+    const durationMinutes = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 60000))
+    autoSaveSession(durationMinutes, newCardsReviewed, sessionId).then(id => {
+      if (id && !sessionId) setSessionId(id)
+    }).catch(console.error)
+    
     if (quality < 3) {
       // If user got it wrong (quality 1 or 2), add this card back to the end of the queue
       // so they have to review it again in this same session
       cards.push(card);
-    } else {
-      // Only count as truly reviewed/completed if they got it right
-      setCardsReviewed(prev => prev + 1)
     }
     
     setCurrentIndex(prev => prev + 1)

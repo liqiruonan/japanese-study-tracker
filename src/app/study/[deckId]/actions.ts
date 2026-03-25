@@ -77,26 +77,81 @@ export async function submitReview(cardId: string, deckId: string, quality: numb
   // Removed revalidatePath to allow for lightning fast optimistic UI updates on the client.
 }
 
-export async function saveStudySession(durationMinutes: number, cardsReviewed: number) {
+export async function saveStudySession(durationMinutes: number, cardsReviewed: number, sessionId?: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
+  if (!user) return null
 
   // Prevent saving empty sessions with 0 minutes and 0 cards
-  if (durationMinutes === 0 && cardsReviewed === 0) return
+  if (durationMinutes === 0 && cardsReviewed === 0) return null
 
   const endTime = new Date()
   const startTime = new Date(endTime.getTime() - durationMinutes * 60000)
 
-  await supabase
-    .from('study_sessions')
-    .insert({
-      user_id: user.id,
-      start_time: startTime.toISOString(),
-      end_time: endTime.toISOString(),
-      duration_minutes: durationMinutes,
-      cards_reviewed: cardsReviewed
-    })
+  let finalSessionId = sessionId;
 
+  if (sessionId) {
+    await supabase
+      .from('study_sessions')
+      .update({
+        end_time: endTime.toISOString(),
+        duration_minutes: durationMinutes,
+        cards_reviewed: cardsReviewed
+      })
+      .eq('id', sessionId)
+  } else {
+    const { data } = await supabase
+      .from('study_sessions')
+      .insert({
+        user_id: user.id,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        duration_minutes: durationMinutes,
+        cards_reviewed: cardsReviewed
+      })
+      .select('id')
+      .single()
+    finalSessionId = data?.id;
+  }
+
+  revalidatePath('/')
   revalidatePath('/decks')
+  
+  return finalSessionId;
+}
+
+export async function autoSaveSession(durationMinutes: number, cardsReviewed: number, sessionId?: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  if (durationMinutes === 0 && cardsReviewed === 0) return null
+
+  const endTime = new Date()
+  const startTime = new Date(endTime.getTime() - durationMinutes * 60000)
+
+  if (sessionId) {
+    await supabase
+      .from('study_sessions')
+      .update({
+        end_time: endTime.toISOString(),
+        duration_minutes: durationMinutes,
+        cards_reviewed: cardsReviewed
+      })
+      .eq('id', sessionId)
+    return sessionId
+  } else {
+    const { data } = await supabase
+      .from('study_sessions')
+      .insert({
+        user_id: user.id,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        duration_minutes: durationMinutes,
+        cards_reviewed: cardsReviewed
+      })
+      .select('id')
+      .single()
+    return data?.id
+  }
 }
